@@ -14,6 +14,14 @@ namespace RoundaboutBuilder
 {
     /* Tool for building elliptic roundabouts */
 
+    /* Adjust mode: the ellipse is previewed live and a single left click builds it.
+     * The main axis direction comes from the "Angle" field, both radii from the
+     * "Main axis" / "Minor axis" fields.
+     *
+     * Two center modes:
+     *   snap (default) - the center is an existing intersection, the ellipse replaces it;
+     *   free           - the center is wherever the mouse is, a stand-alone ring is built. */
+
     class EllipseTool : ToolBaseExtended
     {
         public static EllipseTool Instance;
@@ -21,104 +29,41 @@ namespace RoundaboutBuilder
         private static readonly int DISTANCE_PADDING = 15;
         private static readonly int RADIUS1_DEF = 60;
         private static readonly int RADIUS2_DEF = 30;
+        private static readonly int ANGLE_STEP = 15;
 
         ushort centralNode;
-        ushort axisNode;
 
-        // Saving radii from the last frame so that we don't have to recalculate the ellipse every time
+        /* Which center mode produced the current preview. */
+        bool centerIsNode;
+        Vector3 centerPosition;
+
+        // Saving the values from the last frame so that we don't have to recalculate the ellipse every time
         float prevRadius1 = 0;
         float prevRadius2 = 0;
+        float prevAngle = -1;
+        Vector3 prevCenter;
         Ellipse ellipse;
 
-        // UI:
-        private enum Stage
-        {
-            CentralPoint, // First user chooses cental point
-            MainAxis, // Then point on main axis
-            Final // And then sets radii and stuff
-        }
-        Stage stage = Stage.CentralPoint;
         public bool ControlVertices = true;
 
-        /* Debug */
-        /*public List<Bezier2> debugDraw = new List<Bezier2>();
-        public List<Vector3> debugDrawPositions = new List<Vector3>();
-        bool yes = true; // :)*/
-
-        public void BuildEllipse()
+        /* The ellipse panels only exist when the elliptic roundabout mode is switched on */
+        private static EllipsePanel_3 Panel
         {
-            if (ellipse == null)
-                UIWindow.instance.ThrowErrorMsg("Invalid radii!");
-
-            Ellipse toBeBuiltEllipse = ellipse;
-            Ellipse ellipseWithPadding = ellipse;
-            /* When the old snapping algorithm is enabled, we create secondary (bigger) ellipse, so the newly connected roads obtained by the 
-             * graph traveller are not too short. They will be at least as long as the padding. */
-            if (RoundAboutBuilder.UseOldSnappingAlgorithm.value)
-            {
-                ellipseWithPadding = new Ellipse(NetUtil.Node(centralNode).m_position, NetUtil.Node(axisNode).m_position - NetUtil.Node(centralNode).m_position, prevRadius1 + DISTANCE_PADDING, prevRadius2 + DISTANCE_PADDING);
-            }
-
-            UIWindow.instance.LostFocus();
-            Instance.GoToFirstStage();
-
-            try
-            {
-                bool reverseDirection = (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && RoundAboutBuilder.CtrlToReverseDirection.value;
-                GraphTraveller2 traveller = new GraphTraveller2(centralNode, ellipseWithPadding);
-                EdgeIntersections2 intersections = new EdgeIntersections2(traveller, centralNode, toBeBuiltEllipse, GetFollowTerrain());
-                FinalConnector finalConnector = new FinalConnector(NetUtil.Node(centralNode).Info, intersections, toBeBuiltEllipse, ControlVertices, GetFollowTerrain(),reverseDirection);
-                finalConnector.Build();
-
-                // Easter egg
-                RoundAboutBuilder.EasterEggToggle();
-            }
-            catch (ActionException e)
-            {
-                UIWindow.instance.ThrowErrorMsg(e.Message);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-                UIWindow.instance.ThrowErrorMsg(e.ToString(), true);
-            }
-
+            get { return UIWindow.instance != null ? UIWindow.instance.P_EllipsePanel_3 : null; }
         }
 
-        protected override void OnClick()
+        private static bool SnapCenter
         {
-            base.OnClick();
-            if (m_hoverNode != 0)
-            {
-                switch (stage)
-                {
-                    case Stage.CentralPoint:
-                        centralNode = m_hoverNode;
-                        stage = Stage.MainAxis;
-                        UIWindow.instance.SwitchWindow(UIWindow.instance.P_EllipsePanel_2);
-                        break;
-                    case Stage.MainAxis:
-                        if (m_hoverNode == centralNode)
-                        {
-                            UIWindow.instance.ThrowErrorMsg("You selected the same node!");
-                        }
-                        else
-                        {
-                            axisNode = m_hoverNode;
-                            stage = Stage.Final;
-                            UIWindow.instance.SwitchWindow(UIWindow.instance.P_EllipsePanel_3);
-                        }
-                        break;
-                }
-            }
+            get { return Panel != null && Panel.SnapCenterCheckBox != null ? Panel.SnapCenterCheckBox.isChecked : true; }
         }
 
         /* Returns radii */
         private bool Radius(out float radius1, out float radius2)
         {
             radius1 = radius2 = -1;
-            float? radius1Q = UIWindow.instance.P_EllipsePanel_3.Radius1tf.Value;
-            float? radius2Q = UIWindow.instance.P_EllipsePanel_3.Radius2tf.Value;
+            if (Panel == null) return false;
+            float? radius1Q = Panel.Radius1tf.Value;
+            float? radius2Q = Panel.Radius2tf.Value;
             if (radius1Q == null || radius2Q == null)
             {
                 return false;
@@ -134,47 +79,198 @@ namespace RoundaboutBuilder
             return true;
         }
 
-        public override void IncreaseButton()
+        /* Returns the main axis direction angle in degrees (0 - 359) */
+        private bool Angle(out float angle)
         {
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) {
-                UIWindow.instance.P_EllipsePanel_3.Radius1tf.Increase();
-            } else if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) {
-                UIWindow.instance.P_EllipsePanel_3.Radius2tf.Increase();
-            } else
+            angle = -1;
+            if (Panel == null) return false;
+            float? angleQ = Panel.AngleField.Value;
+            if (angleQ == null)
             {
+                return false;
+            }
 
-                int newRadius1 = 0;
-                int newRadius2 = 0;
-                if (!Radius(out float radius1, out float radius2))
+            angle = (float)angleQ;
+            return true;
+        }
+
+        /* 0 degrees points along +X (to the right of the map), 90 degrees along +Z */
+        private static Vector3 AxisDirection(float degrees)
+        {
+            float radians = degrees * Mathf.Deg2Rad;
+            return new Vector3(Mathf.Cos(radians), 0f, Mathf.Sin(radians));
+        }
+
+        /* Recalculates the ellipse from the panel values, only when something changed */
+        private void RefreshEllipse(Vector3 center)
+        {
+            if (!Radius(out float radius1, out float radius2) || !Angle(out float angle))
+            {
+                ellipse = null;
+                return;
+            }
+
+            if (ellipse != null && radius1 == prevRadius1 && radius2 == prevRadius2
+                && angle == prevAngle && (prevCenter - center).sqrMagnitude < 0.01f)
+            {
+                return;
+            }
+
+            prevRadius1 = radius1;
+            prevRadius2 = radius2;
+            prevAngle = angle;
+            prevCenter = center;
+            ellipse = new Ellipse(center, AxisDirection(angle), radius1, radius2);
+        }
+
+        public void BuildEllipse()
+        {
+            if (ellipse == null || (centerIsNode && centralNode == 0))
+            {
+                UIWindow.instance.ThrowErrorMsg(Loc.L("RAB_ERR_NO_ELLIPSE", "Move the mouse to where the ellipse should go first!"));
+                return;
+            }
+
+            ushort centerNode = centralNode;
+            Vector3 center = centerPosition;
+            bool snap = centerIsNode;
+            Ellipse toBeBuiltEllipse = ellipse;
+            Ellipse ellipseWithPadding = ellipse;
+            /* When the old snapping algorithm is enabled, we create secondary (bigger) ellipse, so the newly connected roads obtained by the 
+             * graph traveller are not too short. They will be at least as long as the padding. */
+            if (RoundAboutBuilder.UseOldSnappingAlgorithm.value)
+            {
+                ellipseWithPadding = new Ellipse(center, AxisDirection(prevAngle), prevRadius1 + DISTANCE_PADDING, prevRadius2 + DISTANCE_PADDING);
+            }
+
+            UIWindow.instance.LostFocus();
+
+            try
+            {
+                NetInfo groundInfo = UIWindow.instance.dropDown.Value;
+                if (groundInfo == null)
                 {
-                    UIWindow.instance.P_EllipsePanel_3.Radius1tf.text = RADIUS1_DEF.ToString();
-                    UIWindow.instance.P_EllipsePanel_3.Radius1tf.text = RADIUS2_DEF.ToString();
+                    UIWindow.instance.ThrowErrorMsg(Loc.L("RAB_ERR_NO_NET", "No road selected"));
                     return;
+                }
+
+                /* Ground / elevated / bridge. "Ground" keeps the historic behaviour: the road
+                 * picked in the dropdown is used as is. */
+                NetInfo buildInfo = groundInfo;
+                RampStructure structure = Panel != null ? Panel.Structure : RampStructure.Auto;
+                if (structure != RampStructure.Auto)
+                {
+                    string missing;
+                    buildInfo = StructureVariants.Resolve(groundInfo, structure, out missing);
+                    if (buildInfo == null)
+                    {
+                        UIWindow.instance.ThrowErrorMsg(Loc.L("RAB_ERR_ELLIPSE_NO_VARIANT",
+                            "{0} is not available for this road. Pick another structure or another road", missing));
+                        return;
+                    }
+
+                    if (!StructureVariants.CanBeRaised(buildInfo))
+                    {
+                        UIWindow.instance.ThrowErrorMsg(Loc.L("RAB_ERR_ELLIPSE_NO_VARIANT",
+                            "{0} is not available for this road. Pick another structure or another road",
+                            structure.ToString()));
+                        return;
+                    }
+                }
+
+                Debug.Log("[RoundaboutBuilder] Ellipse structure=" + structure + ", mode=" + (snap ? "snap" : "free")
+                    + ", prefab=" + (buildInfo != null ? buildInfo.name : "null")
+                    + ", ground prefab=" + groundInfo.name + ", segments=" + toBeBuiltEllipse.Density);
+
+                bool reverseDirection = (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && RoundAboutBuilder.CtrlToReverseDirection.value;
+                NetInfo prefabOverride = structure != RampStructure.Auto ? buildInfo : null;
+
+                FinalConnector finalConnector;
+                if (snap)
+                {
+                    GraphTraveller2 traveller = new GraphTraveller2(centerNode, ellipseWithPadding);
+                    EdgeIntersections2 intersections = new EdgeIntersections2(traveller, centerNode, toBeBuiltEllipse, GetFollowTerrain());
+                    finalConnector = new FinalConnector(NetUtil.Node(centerNode).Info, intersections, toBeBuiltEllipse, ControlVertices, GetFollowTerrain(), reverseDirection, prefabOverride);
                 }
                 else
                 {
-                    double ratio = (double)radius2 / (double)radius1;
-                    newRadius1 = Convert.ToInt32(Math.Ceiling(new decimal(radius1 + 1) / new decimal(5))) * 5;
-                    newRadius2 = Convert.ToInt32(ratio * newRadius1);
-                }
-                if (UIWindow.instance.P_EllipsePanel_3.Radius1tf.IsValid(newRadius1) && UIWindow.instance.P_EllipsePanel_3.Radius2tf.IsValid(newRadius2) && newRadius1 >= newRadius2)
-                {
-                    UIWindow.instance.P_EllipsePanel_3.Radius1tf.text = newRadius1.ToString();
-                    UIWindow.instance.P_EllipsePanel_3.Radius2tf.text = newRadius2.ToString();
+                    /* Free mode: nothing is snapped to, so no intersections are collected - the
+                     * ring is just laid out around the mouse position. */
+                    finalConnector = new FinalConnector(groundInfo, null, toBeBuiltEllipse, ControlVertices, GetFollowTerrain(), reverseDirection, prefabOverride);
                 }
 
+                /* Optional Network Skins pass, same as the spiral and the free tool. */
+                GameAction nsAction = null;
+                NetInfo skinsPrefab = prefabOverride != null ? prefabOverride : groundInfo;
+                if (RoundAboutBuilder.HidePillarsAndLights.value && NetworkSkinsHook.IsAvailable() && skinsPrefab != null)
+                {
+                    NetworkSkinsHook.ReportSupport(skinsPrefab);
+                    nsAction = new NetworkSkinsAction(finalConnector.BuiltSegments, skinsPrefab);
+                }
+
+                finalConnector.Build(nsAction);
+
+                // Easter egg
+                RoundAboutBuilder.EasterEggToggle();
+            }
+            catch (ActionException e)
+            {
+                UIWindow.instance.ThrowErrorMsg(e.Message);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+                UIWindow.instance.ThrowErrorMsg(e.ToString(), true);
+            }
+            finally
+            {
+                ClearPreview();
             }
         }
 
-        public override void DecreaseButton()
+        private void ClearPreview()
         {
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            ellipse = null;
+            centralNode = 0;
+            centerIsNode = false;
+            prevRadius1 = 0;
+            prevRadius2 = 0;
+            prevAngle = -1;
+        }
+
+        protected override void OnClick()
+        {
+            base.OnClick();
+            if (ellipse != null)
             {
-                UIWindow.instance.P_EllipsePanel_3.Radius1tf.Decrease();
+                BuildEllipse();
+            }
+        }
+
+        /* Right click turns the main axis by 15 degrees, same as the spiral's start direction. */
+        protected override void OnRightClick()
+        {
+            base.OnRightClick();
+            if (Panel == null) return;
+
+            StepAngle(ANGLE_STEP);
+            Debug.Log("[RoundaboutBuilder] Ellipse main axis angle: " + Panel.AngleField.text + " degrees");
+        }
+
+        public override void IncreaseButton()
+        {
+            if (Panel == null) return;
+            if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
+            {
+                StepAngle(ANGLE_STEP);
+            }
+            else if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            {
+                Panel.Radius1tf.Increase();
             }
             else if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
             {
-                UIWindow.instance.P_EllipsePanel_3.Radius2tf.Decrease();
+                Panel.Radius2tf.Increase();
             }
             else
             {
@@ -183,8 +279,49 @@ namespace RoundaboutBuilder
                 int newRadius2 = 0;
                 if (!Radius(out float radius1, out float radius2))
                 {
-                    UIWindow.instance.P_EllipsePanel_3.Radius1tf.text = RADIUS1_DEF.ToString();
-                    UIWindow.instance.P_EllipsePanel_3.Radius1tf.text = RADIUS2_DEF.ToString();
+                    Panel.Radius1tf.text = RADIUS1_DEF.ToString();
+                    Panel.Radius2tf.text = RADIUS2_DEF.ToString();
+                    return;
+                }
+                else
+                {
+                    double ratio = (double)radius2 / (double)radius1;
+                    newRadius1 = Convert.ToInt32(Math.Ceiling(new decimal(radius1 + 1) / new decimal(5))) * 5;
+                    newRadius2 = Convert.ToInt32(ratio * newRadius1);
+                }
+                if (Panel.Radius1tf.IsValid(newRadius1) && Panel.Radius2tf.IsValid(newRadius2) && newRadius1 >= newRadius2)
+                {
+                    Panel.Radius1tf.text = newRadius1.ToString();
+                    Panel.Radius2tf.text = newRadius2.ToString();
+                }
+
+            }
+        }
+
+        public override void DecreaseButton()
+        {
+            if (Panel == null) return;
+            if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
+            {
+                StepAngle(-ANGLE_STEP);
+            }
+            else if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            {
+                Panel.Radius1tf.Decrease();
+            }
+            else if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+            {
+                Panel.Radius2tf.Decrease();
+            }
+            else
+            {
+
+                int newRadius1 = 0;
+                int newRadius2 = 0;
+                if (!Radius(out float radius1, out float radius2))
+                {
+                    Panel.Radius1tf.text = RADIUS1_DEF.ToString();
+                    Panel.Radius2tf.text = RADIUS2_DEF.ToString();
                     return;
                 }
                 else
@@ -193,99 +330,125 @@ namespace RoundaboutBuilder
                     newRadius1 = Convert.ToInt32(Math.Floor(new decimal(radius1 - 1) / new decimal(5))) * 5;
                     newRadius2 = Convert.ToInt32(ratio * newRadius1);
                 }
-                if (UIWindow.instance.P_EllipsePanel_3.Radius1tf.IsValid(newRadius1) && UIWindow.instance.P_EllipsePanel_3.Radius2tf.IsValid(newRadius2) && newRadius1 >= newRadius2)
+                if (Panel.Radius1tf.IsValid(newRadius1) && Panel.Radius2tf.IsValid(newRadius2) && newRadius1 >= newRadius2)
                 {
-                    UIWindow.instance.P_EllipsePanel_3.Radius1tf.text = newRadius1.ToString();
-                    UIWindow.instance.P_EllipsePanel_3.Radius2tf.text = newRadius2.ToString();
+                    Panel.Radius1tf.text = newRadius1.ToString();
+                    Panel.Radius2tf.text = newRadius2.ToString();
                 }
 
             }
         }
 
+        /* Rotates the main axis by the given step, wrapping around 0 - 359 */
+        private void StepAngle(int step)
+        {
+            if (Panel == null) return;
+            NumericTextField angleField = Panel.AngleField;
+            int? current = angleField.Value;
+            int newAngle = ((current ?? 0) + step) % 360;
+            if (newAngle < 0) newAngle += 360;
+            if (angleField.IsValid(newAngle)) angleField.text = newAngle.ToString();
+        }
+
         protected override void OnDisable()
         {
             base.OnDisable();
-            ellipse = null;
-            GoToFirstStage();
+            ClearPreview();
         }
 
         public override void GoToFirstStage()
         {
-            stage = Stage.CentralPoint;
-            if(UIWindow.instance != null && UIWindow.instance.P_EllipsePanel_1 != null
-                && (UIWindow.instance.m_panelOnUI == UIWindow.instance.P_EllipsePanel_2 || UIWindow.instance.m_panelOnUI == UIWindow.instance.P_EllipsePanel_3)) // hell
+            ClearPreview();
+            if (UIWindow.instance != null && Panel != null
+                && UIWindow.instance.m_panelOnUI != Panel)
             {
-                UIWindow.instance.SwitchWindow(UIWindow.instance.P_EllipsePanel_1);
+                UIWindow.instance.SwitchWindow(Panel);
+            }
+        }
+
+        private void RenderClickLabel()
+        {
+            if (ellipse != null)
+            {
+                RenderHoveringLabel(Loc.L("RAB_HOVER_ELLIPSE_CLICK", "{0} segments\nClick to build, adjust in the panel", ellipse.Density));
+            }
+            else
+            {
+                RenderHoveringLabel(Loc.L("RAB_HOVER_ELLIPSE_INVALID", "Invalid radii or angle\nCheck the values in the panel"));
             }
         }
 
         /* This draws UI shapes on the map. */
         protected override void RenderOverlayExtended(RenderManager.CameraInfo cameraInfo)
         {
-            //debugDrawMethod(cameraInfo);
             try
             {
+                bool snap = SnapCenter;
+
                 if (!insideUI)
                 {
-                    if (m_hoverNode != 0 && (stage == Stage.CentralPoint || stage == Stage.MainAxis))
+                    if (snap)
                     {
-                        NetNode hoveredNode = NetUtil.Node(m_hoverNode);
-                        RenderManager.instance.OverlayEffect.DrawCircle(cameraInfo, Color.black, hoveredNode.m_position, 15f, hoveredNode.m_position.y - 1f, hoveredNode.m_position.y + 1f, true, true);
-                        UIWindow.instance.m_hoveringLabel.isVisible = false;
-                    }
-                    else if (stage == Stage.CentralPoint)
-                    {
-                        RenderMousePositionCircle(cameraInfo);
-                        RenderHoveringLabel("Select center of elliptic roundabout");
-                    }
-                    else if (stage == Stage.MainAxis)
-                    {
-                        RenderMousePositionCircle(cameraInfo);
-                        RenderHoveringLabel("Select any intersection in direction of main axis");
-                    }
-                    else
-                    {
-                        UIWindow.instance.m_hoveringLabel.isVisible = false;
-                    }
-                }
-
-                if (stage == Stage.MainAxis || stage == Stage.Final)
-                {
-                    NetNode centralNodeDraw = NetUtil.Node(centralNode);
-                    RenderManager.instance.OverlayEffect.DrawCircle(cameraInfo, Color.red, centralNodeDraw.m_position, 15f, centralNodeDraw.m_position.y - 1f, centralNodeDraw.m_position.y + 1f, true, true);
-                }
-                if (stage == Stage.Final)
-                {
-                    NetNode axisNodeDraw = NetUtil.Node(axisNode);
-                    RenderManager.instance.OverlayEffect.DrawCircle(cameraInfo, Color.green, axisNodeDraw.m_position, 15f, axisNodeDraw.m_position.y - 1f, axisNodeDraw.m_position.y + 1f, true, true);
-
-                    if(Radius(out float radius1, out float radius2))
-                    {
-                        /* If the radiuses didn't change, we don't have to generate new ellipse. */
-                        if(radius1 == prevRadius1 && radius2 == prevRadius2 && ellipse != null)
+                        if (m_hoverNode != 0)
                         {
-                            DrawEllipse(cameraInfo);
+                            NetNode hoveredNode = NetUtil.Node(m_hoverNode);
+                            RenderManager.instance.OverlayEffect.DrawCircle(cameraInfo, Color.black, hoveredNode.m_position, 15f, hoveredNode.m_position.y - 1f, hoveredNode.m_position.y + 1f, true, true);
+                            centralNode = m_hoverNode;
+                            centerIsNode = true;
+                            centerPosition = hoveredNode.m_position;
+                            RefreshEllipse(hoveredNode.m_position);
+                            RenderClickLabel();
                         }
                         else
                         {
-                            prevRadius1 = radius1;
-                            prevRadius2 = radius2;
-                            ellipse = new Ellipse(NetUtil.Node(centralNode).m_position, NetUtil.Node(axisNode).m_position - NetUtil.Node(centralNode).m_position, radius1, radius2);
-                            DrawEllipse(cameraInfo);
+                            ClearPreview();
+                            RenderMousePositionCircle(cameraInfo);
+                            RenderHoveringLabel(Loc.L("RAB_HOVER_ELLIPSE_CENTER", "Hover the mouse over the center intersection"));
                         }
                     }
                     else
                     {
-                        ellipse = null;
+                        /* Free mode: the mouse position is the center of the ellipse. */
+                        centralNode = 0;
+                        centerIsNode = false;
+                        centerPosition = HoverPosition;
+                        RefreshEllipse(HoverPosition);
+                        RenderManager.instance.OverlayEffect.DrawCircle(cameraInfo, Color.black, HoverPosition, 15f, HoverPosition.y - 1f, HoverPosition.y + 1f, true, true);
+                        RenderClickLabel();
                     }
+                }
+                else
+                {
+                    /* Mouse is over the panel: keep the preview in sync with the fields, just hide the label */
+                    if (UIWindow.instance != null && UIWindow.instance.m_hoveringLabel != null)
+                    {
+                        UIWindow.instance.m_hoveringLabel.isVisible = false;
+                    }
+                    if (centerIsNode && centralNode != 0)
+                    {
+                        RefreshEllipse(NetUtil.Node(centralNode).m_position);
+                    }
+                }
+
+                if (ellipse != null)
+                {
+                    if (centerIsNode && centralNode != 0)
+                    {
+                        NetNode centralNodeDraw = NetUtil.Node(centralNode);
+                        RenderManager.instance.OverlayEffect.DrawCircle(cameraInfo, Color.red, centralNodeDraw.m_position, 15f, centralNodeDraw.m_position.y - 1f, centralNodeDraw.m_position.y + 1f, true, true);
+                    }
+                    else if (!centerIsNode)
+                    {
+                        RenderManager.instance.OverlayEffect.DrawCircle(cameraInfo, Color.red, centerPosition, 15f, centerPosition.y - 1f, centerPosition.y + 1f, true, true);
+                    }
+                    DrawEllipse(cameraInfo);
                 }
             }
             catch(Exception e)
             {
                 Debug.Log("Catched exception while rendering ellipse UI.");
                 Debug.Log(e);
-                stage = Stage.CentralPoint;
-                enabled = false; // ???
+                ClearPreview();
             }
         }
 
@@ -305,47 +468,5 @@ namespace RoundaboutBuilder
             Vector3 v4 = new Vector3(bezier.d.x, 0, bezier.d.y);
             return new Bezier3(v1, v2, v3, v4);
         }
-
-        /* Debug methods */
-
-        /* Allow me tho draw vectors and points on the map */
-
-        /*private void debugDrawMethod(RenderManager.CameraInfo cameraInfo)
-        {
-            if (debugDraw == null) return;
-            foreach (Bezier2 bezier in debugDraw)
-            {
-                if(yes)
-                    RenderManager.instance.OverlayEffect.DrawBezier(cameraInfo, Color.yellow, ShiftTo3D(bezier), 0.1f, 0, 0, -1f, 1280f, false, true);
-                else
-                    RenderManager.instance.OverlayEffect.DrawBezier(cameraInfo, Color.blue, ShiftTo3D(bezier), 0.1f, 0, 0, -1f, 1280f, false, true);
-
-                yes = !yes;
-            }
-            foreach (Vector3 vector in debugDrawPositions)
-            {
-                RenderManager.instance.OverlayEffect.DrawCircle(cameraInfo, Color.cyan, vector, 15f, vector.y - 1f, vector.y + 1f, true, true);
-            }
-        }
-
-        public void debugDrawVector(Vector3 vector, Vector3 startPos)
-        {
-            Vector2 vector2d = new Vector2(vector.x, vector.z);
-            Vector2 a = new Vector2(startPos.x, startPos.z);
-            Vector2 b = a + (vector2d * (1 / 3));
-            Vector2 c = a + (vector2d * (2 / 3));
-            Vector2 d = a + vector2d;
-            debugDraw.Add(new Bezier2(a, b, c, d));
-        }
-
-        public void debugDrawPositionVector(Vector3 vector)
-        {
-            debugDrawPositions.Add(vector);
-        }*/
-
-        /*private float debugDistanceXZ (Vector3 v1, Vector3 v2)
-        {
-            return (float) Math.Sqrt((v1.x - v2.x) * (v1.x - v2.x) + (v1.z - v2.z)*(v1.z - v2.z));
-        }*/
     }    
 }

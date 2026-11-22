@@ -1,0 +1,185 @@
+# Roundabout Builder - English strings (default language, also the translation template)
+#
+# Format: KEY value   - one entry per line, key and value separated by a single space.
+# Use \n inside a value for a line break. Lines starting with # are comments.
+# Do not translate the KEY part, only the value after the first space.
+#
+# To add a language: copy this file as lang_<code>.txt (for example lang_zh-cn.txt,
+# lang_de.txt) into the same Translations folder and translate the values.
+
+RAB_LANGUAGE_CODE en
+RAB_LANGUAGE_NAME English
+
+# --- Mod entry ---
+RAB_MOD_NAME Roundabout Builder
+RAB_MOD_DESC Press CTRL+O to open mod menu
+
+# --- Settings page ---
+RAB_LANGUAGE_LABEL Language
+RAB_LANGUAGE_AUTO Auto (system language)
+
+RAB_OPT_TWO_WAY Allow selection of two-way roads
+RAB_OPT_TWO_WAY_DESC You can select two-way roads for your roundabouts through the roads menu (if that option is enabled)
+RAB_OPT_NO_ROADS Do not remove or connect any roads (experimental)
+RAB_OPT_NO_ROADS_DESC No roads will be removed or connected when the roundabout is built
+RAB_OPT_FOLLOW_ROAD Use the selected road in roads menu as the roundabout road
+RAB_OPT_FOLLOW_ROAD_DESC Your selected road for the roundabout will change as you browse through the roads menu
+RAB_OPT_TOOLBAR_BUTTON Show mod icon in toolbar (needs reload)
+RAB_OPT_TOOLBAR_BUTTON_DESC Show the Roundabout Builder icon in road tools panel (You can always use CTRL+O to open the mod menu)
+RAB_OPT_DOCK_UUI Dock to Unified UI
+RAB_OPT_DOCK_UUI_DESC Show the roundabout button in the Unified UI toolbar (requires the Unified UI mod). Turn off to keep only the vanilla toolbar button
+RAB_UUI_TOOLTIP Roundabout Builder
+RAB_OPT_EXTRA_KEYS Use secondary increase / decrease radius keys
+RAB_OPT_EXTRA_KEYS_DESC If checked, you can use bound keys from the list below to increase / decrease radius (besides the ones on numpad)
+RAB_OPT_OLD_SNAP Legacy: Use old snapping algorithm
+RAB_OPT_OLD_SNAP_DESC Old snapping algorithm connects roads at 90° angle, but distorts their geometry
+RAB_OPT_NO_PREFAB_FILTER Do not filter prefabs (include all networks in the menu)
+RAB_OPT_NO_PREFAB_FILTER_DESC The dropdown menu will include all prefabs available, not only one-way roads
+RAB_OPT_NEED_MONEY Require money
+RAB_OPT_NEED_MONEY_DESC Building a roundabout will cost you money
+RAB_OPT_CTRL_REVERSE Hold CTRL to build in opposite direction
+RAB_OPT_CTRL_REVERSE_DESC The roundabout will be built in opposite direction if you hold CTRL
+RAB_OPT_UNLIMITED_RADIUS Unlimited radius
+RAB_OPT_UNLIMITED_RADIUS_DESC (Almost) Unlimited roundabout radius - up to 20 000 units
+RAB_OPT_LEGACY_ELLIPSE Legacy: Elliptic roundabouts
+RAB_OPT_LEGACY_ELLIPSE_DESC Enable elliptic roundabouts. This feature is no longer maintained
+
+RAB_BTN_RESET_POS Reset tool window position
+RAB_BTN_REMOVE_GLITCHED Remove glitched roads (Save game inbefore)
+
+RAB_EASTER_EGG Congratulations! You've built {0} roundabouts in total! Do you live in France?\nFun fact: There is more than 32000 roundabouts in France, which is about one roundabout every 30 km. But the country with the highest number of roundabouts per km is the United Kingdom (25000 in total/one every 15 km). Thanks to Scott Batson from Quora for this summary (2015)
+
+# --- Tool window ---
+RAB_WIN_TITLE Roundabout Builder
+RAB_LBL_RADIUS Radius:
+RAB_TIP_PLUS_MINUS Press +/- to adjust
+RAB_BTN_FREE_CURSOR Free Cursor Mode...
+RAB_TIP_FREE_CURSOR Create roundabouts anywhere (Warning! Roads won't be removed or connected)
+RAB_BTN_ELLIPSE Elliptic Roundabout...
+RAB_TIP_NETWORK_ANARCHY Tip: Use Network Anarchy for elevated roads
+
+RAB_LBL_ELEVATION Elevation:
+RAB_TIP_ELEVATION Press PgUp/PgDn to adjust
+RAB_TIP_ELEVATION_FIELD Press PgUp/PgDn/Home to adjust - set elevation in Road Tool
+RAB_WARN_FREE_TOOL Roads won't be removed or connected\nUse Network Anarchy for elevated roads
+RAB_CHK_ABSOLUTE_ELEVATION Absolute elevation
+RAB_TIP_ABSOLUTE_ELEVATION Elevation will be measured from zero level instead of terrain level
+
+RAB_PANEL_STEP1 Step 1/3:\nSelect center of the elliptic roundabout (Nothing will be built yet)
+RAB_PANEL_STEP2 Step 2/3:\nSelect any intersection on the main axis of the roundabout (Nothing will be built yet)
+RAB_LBL_MAIN_AXIS Main axis:
+RAB_LBL_MINOR_AXIS Minor axis:
+RAB_LBL_ANGLE Angle:
+RAB_TIP_ALT_PLUS_MINUS Press ALT +/- to rotate by 15 degrees
+RAB_LBL_ELLIPSE_STRUCT Structure:
+RAB_TIP_ELLIPSE_STRUCT Ground, elevated or bridge. Elevated and bridge use the Network Anarchy variant of the selected road
+RAB_STRUCT_GROUND Ground
+RAB_ERR_ELLIPSE_NO_VARIANT {0} is not available for this road. Pick another structure or another road
+RAB_CHK_SNAP_CENTER Snap center to intersection
+RAB_TIP_SNAP_CENTER Checked: the ellipse replaces an existing intersection. Unchecked: the mouse position is the center of a free-standing ellipse
+RAB_ERR_NO_NET No road selected
+RAB_TIP_SHIFT_PLUS_MINUS Press SHIFT +/- to adjust
+RAB_TIP_CTRL_PLUS_MINUS Press CTRL +/- to adjust
+RAB_BTN_BUILD Build
+RAB_CHK_CONTROL_POINTS Insert control points
+RAB_TIP_CONTROL_POINTS Control points are inserted on main axes to keep the ellipse in shape. See workshop page
+
+RAB_LBL_TMPE_SETTINGS TMPE settings
+RAB_TMPE_ENTER_MAIN Enter junct. main r.
+RAB_TIP_TMPE_ENTER_MAIN Allow vehicles on the roundabout to enter blocked junctions (TMPE policy)
+RAB_TMPE_ENTER_YIELD Enter junct. yield. r.
+RAB_TIP_TMPE_ENTER_YIELD Allow vehicles entering the roundabout to enter blocked junction (TMPE policy)
+RAB_TMPE_NO_PARKING No parking
+RAB_TIP_TMPE_NO_PARKING Restrict parking on the roundabout (TMPE policy)
+RAB_TMPE_PRIORITY Priority signs
+RAB_TIP_TMPE_PRIORITY Vehicles on the roundabout will have right-of-way
+RAB_TMPE_NO_CROSSINGS Disable crosswalks
+RAB_TIP_TMPE_NO_CROSSINGS Disallow pedestrians to cross to inner ring of the roundabout (Does not change visual appearance)
+RAB_TMPE_LANE_CHANGING Allow lane changing
+RAB_TIP_TMPE_LANE_CHANGING Allow vehicles to change lanes at the junction (both on the main and entering roads)
+
+RAB_CHK_LEVEL_TERRAIN Level terrain
+RAB_TIP_LEVEL_TERRAIN Make the roundabout the same height everywhere
+RAB_CHK_SETUP_TMPE Set up TMPE
+RAB_TIP_SETUP_TMPE Apply TMPE policies to the roundabout
+RAB_BTN_TMPE_SETTINGS ...
+RAB_TIP_TMPE_SETTINGS TMPE settings
+RAB_CHK_KEEP_OPEN Keep open
+RAB_TIP_KEEP_OPEN Keep the window open after roundabout is built
+RAB_BTN_BACK Back
+RAB_BTN_CLOSE Close
+RAB_BTN_UNDO Undo
+RAB_TIP_UNDO Remove last built roundabout (CTRL+Z). Warning: Use only right after the roundabout has been built
+RAB_TIP_WORKSHOP Roundabout Builder [{0}] by Strad\nOpen in Steam Workshop
+RAB_ERR_TITLE Roundabout builder
+
+# --- Tools ---
+RAB_TIP_REACTIVATE Click inside the window to reactivate the tool
+RAB_TIP_ANY_NETWORK Tip: Use this with any network (see options)
+RAB_TIP_SMART_INTERSECTION Tip: Check out Smart Intersection Builder!
+RAB_TIP_ADJUST_PATHFINDING Tip: Check out Adjust Pathfinding mod!
+RAB_HOVER_COST Cost: {0}\nClick to build\nPress +/- to adjust radius
+RAB_HOVER_INVALID_RADIUS Invalid radius\nPress +/- to adjust radius
+RAB_HOVER_HOVER_INTERSECTION Hover mouse over intersection
+RAB_HOVER_SELECT_CENTER Select center of elliptic roundabout
+RAB_HOVER_SELECT_AXIS Select any intersection in direction of main axis
+RAB_HOVER_ELLIPSE_CLICK {0} segments\nClick to build, adjust in the panel
+RAB_HOVER_ELLIPSE_INVALID Invalid radii or angle\nCheck the values in the panel
+RAB_HOVER_ELLIPSE_CENTER Hover the mouse over the center intersection
+RAB_ERR_NO_ELLIPSE Hover the mouse over the center intersection first!
+
+# --- Error messages ---
+RAB_ERR_RADIUS_BOUNDS Radius out of bounds!
+RAB_ERR_ELEVATION_BOUNDS Elevation out of bounds!
+RAB_ERR_INVALID_RADII Invalid radii!
+RAB_ERR_SAME_NODE You selected the same node!
+RAB_ERR_NOT_ENOUGH_MONEY Failed to charge player: not enough money
+
+# --- Toolbar ---
+RAB_TIP_TOOLBAR_BUTTON Roundabout Builder (CTRL+O)
+
+# --- Key bindings ---
+RAB_KEY_MOD_SHORTCUT Mod shortcut
+RAB_KEY_INCREASE Increase radius (secondary)
+RAB_KEY_DECREASE Decrease radius (secondary)
+RAB_KEY_PRESS_ANY Press any key
+
+# --- Glitched roads tool ---
+RAB_GLITCH_NOT_INGAME_TITLE Not In-Game
+RAB_GLITCH_NOT_INGAME_MSG Use this button when in-game to remove glitched roads
+RAB_GLITCH_TITLE Removing glitched segments
+RAB_GLITCH_ERROR ERROR: Unhandled exceptions: {0}. Maybe something went VERY VERY wrong. You should reload last save. (Segments removed: {1})
+RAB_GLITCH_REMOVED Removed {0} segment{1}! Please check that nothing unpleasant has happened to your game. Save it in a new file.
+RAB_GLITCH_NONE No glitched segments found.
+
+# --- Spiral ramp ---
+RAB_BTN_SPIRAL_RAMP Spiral ramp...
+RAB_TIP_SPIRAL_RAMP Build a ramp that circles while it rises (you connect both ends yourself)
+RAB_OPT_SPIRAL_RAMP Enable spiral ramps (experimental)
+RAB_OPT_SPIRAL_RAMP_DESC Adds a spiral ramp tool to the main panel. Both ends of the ramp stay open, you connect them yourself
+RAB_LBL_SPIRAL_RADIUS Radius:
+RAB_TIP_SPIRAL_RADIUS Radius of the ramp (centre line)
+RAB_LBL_SPIRAL_HEIGHT Height:
+RAB_TIP_SPIRAL_HEIGHT Total height gained over the whole ramp
+RAB_LBL_SPIRAL_TURNS Turns:
+RAB_TIP_SPIRAL_TURNS How many full turns the ramp makes
+RAB_CHK_SPIRAL_REVERSE Reverse direction
+RAB_TIP_SPIRAL_REVERSE Build the ramp the other way around
+RAB_SPIRAL_WARN Both ends stay open - connect them to your roads
+RAB_SPIRAL_INFO {0} segments, grade {1}%\nClick to build
+RAB_ERR_SPIRAL_FIELDS Fill in the radius, height and turns fields
+RAB_ERR_SPIRAL_TOO_SMALL Radius is too small for this segment length (chord {0}). Increase the radius
+RAB_ERR_SPIRAL_TOO_STEEP Grade {0}% is too steep. Raise the radius, lower the height or add a turn
+RAB_ERR_SPIRAL_NO_NET No road selected
+RAB_SPIRAL_ACTION_NAME Build spiral ramp
+RAB_LBL_SPIRAL_STRUCT Structure:
+RAB_TIP_SPIRAL_STRUCT Ground, elevated or bridge. Auto follows the mode selected in Network Anarchy
+RAB_STRUCT_AUTO Auto
+RAB_STRUCT_ELEVATED Elevated
+RAB_STRUCT_BRIDGE Bridge
+RAB_ERR_SPIRAL_NO_VARIANT {0} is not available for this road. Pick another structure or another road
+RAB_LBL_SPIRAL_TAIL End offset:
+RAB_TIP_SPIRAL_TAIL Extra degrees past the last full turn. 180 puts the end point on the opposite side of the start
+
+RAB_OPT_NS_HIDE Hide bridge pillars and street lights (Network Skins)
+RAB_OPT_NS_HIDE_DESC Spiral ramps built with a bridge or elevated prefab get no pillars and no street lights. Requires Network Skins Continued; without it, or when a lane prop is not recognised as a street light, only a line is written to the log

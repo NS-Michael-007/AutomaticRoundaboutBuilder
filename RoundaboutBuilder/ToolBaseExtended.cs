@@ -79,6 +79,11 @@ namespace RoundaboutBuilder
             {
                 OnClick();
             }
+
+            if (Input.GetMouseButtonUp(1))
+            {
+                OnRightClick();
+            }
         }
 
         protected override void OnDisable()
@@ -108,6 +113,13 @@ namespace RoundaboutBuilder
         }
 
         protected virtual void OnClick()
+        {
+
+        }
+
+        /* Called on right mouse button release, only when the cursor is over the world
+         * (OnToolUpdate returns early while the mouse is over the UI). */
+        protected virtual void OnRightClick()
         {
 
         }

@@ -18,6 +18,29 @@ namespace RoundaboutBuilder.UI
     {
         public static UIWindow instance;
 
+        /* Panel width. Non-English translations (Chinese, for example) have longer
+         * road names, so the panel is a bit wider in those languages. Width only -
+         * the height calculations in SwitchWindow are untouched. */
+        public const int WIDTH_ENGLISH = 204;
+        private const int WIDTH_NON_ENGLISH = 244;
+
+        public static int PanelWidth
+        {
+            get
+            {
+                try
+                {
+                    return string.Equals(Loc.CurrentLanguageCode, "en", System.StringComparison.OrdinalIgnoreCase)
+                        ? WIDTH_ENGLISH
+                        : WIDTH_NON_ENGLISH;
+                }
+                catch
+                {
+                    return WIDTH_ENGLISH;
+                }
+            }
+        }
+
         private static readonly SavedBool SavedKeepOpen = new SavedBool("savedKeepOpen", RoundAboutBuilder.settingsFileName, false, true);
         public static readonly SavedBool SavedSetupTmpe = new SavedBool("savedSetupTMPE", RoundAboutBuilder.settingsFileName, true, true);
         public static readonly SavedBool SavedFollowTerrain = new SavedBool("savedFollowTerrain", RoundAboutBuilder.settingsFileName, false, true);
@@ -32,6 +55,7 @@ namespace RoundaboutBuilder.UI
         public EllipsePanel_3 P_EllipsePanel_3;
         public TmpeSetupPanel P_TmpeSetupPanel;
         public FreeToolPanel P_FreeToolPanel;
+        public HelixPanel P_HelixPanel;
 
         public HoveringLabel m_hoveringLabel;
 
@@ -64,10 +88,11 @@ namespace RoundaboutBuilder.UI
 
         private void CreateOptionPanel()
         {
+            Debug.Log("[RoundaboutBuilder] UI window build: lang=" + Loc.CurrentLanguageCode + ", width=" + PanelWidth);
             name = "RAB_ToolOptionsPanel";
             atlas = ResourceLoader.GetAtlas("Ingame");
             backgroundSprite = "SubcategoriesPanel";
-            size = new Vector2(204, 180);
+            size = new Vector2(PanelWidth, 180);
             absolutePosition = new Vector3(RoundAboutBuilder.savedWindowX.value, RoundAboutBuilder.savedWindowY.value);
 
             isVisible = false;
@@ -103,7 +128,7 @@ namespace RoundaboutBuilder.UI
             openDescription.size = new Vector3(15f, 15f);
             openDescription.normalFgSprite = "ToolbarIconHelp";
             openDescription.name = "RAB_workshopButton";
-            openDescription.tooltip = "Roundabout Builder [" + RoundAboutBuilder.VERSION + "] by Strad\nOpen in Steam Workshop";
+            openDescription.tooltip = Loc.L("RAB_TIP_WORKSHOP", "Roundabout Builder [{0}] by Strad\nOpen in Steam Workshop", RoundAboutBuilder.VERSION);
             UIUtil.SetupButtonStateSprites(ref openDescription, "OptionBase", true);
             if (!PlatformService.IsOverlayEnabled())
             {
@@ -129,7 +154,7 @@ namespace RoundaboutBuilder.UI
 
             UILabel label = m_topSection.AddUIComponent<UILabel>();
             label.textScale = 0.9f;
-            label.text = "Roundabout Builder";
+            label.text = Loc.L("RAB_WIN_TITLE", "Roundabout Builder");
             label.relativePosition = new Vector2(8, cummulativeHeight);
             label.SendToBack();
             cummulativeHeight += label.height + 8;
@@ -147,12 +172,12 @@ namespace RoundaboutBuilder.UI
             /* Bottom section */
 
             m_followTerrainSection = AddUIComponent<UIPanel>();
-            m_followTerrainSection.width = 204f;
+            m_followTerrainSection.width = PanelWidth;
             m_followTerrainSection.clipChildren = true;
             var chbFollowTerrain = UIUtil.CreateCheckBox(m_followTerrainSection);
             chbFollowTerrain.name = "RAB_followTerrain";
-            chbFollowTerrain.label.text = "Level terrain";
-            chbFollowTerrain.tooltip = "Make the roundabout the same height everywhere";
+            chbFollowTerrain.label.text = Loc.L("RAB_CHK_LEVEL_TERRAIN", "Level terrain");
+            chbFollowTerrain.tooltip = Loc.L("RAB_TIP_LEVEL_TERRAIN", "Make the roundabout the same height everywhere");
             chbFollowTerrain.isChecked = !SavedFollowTerrain;
             chbFollowTerrain.relativePosition = new Vector3(8, 0);
             chbFollowTerrain.eventCheckChanged += (c, state) =>
@@ -162,13 +187,15 @@ namespace RoundaboutBuilder.UI
             };
             m_followTerrainSection.height = chbFollowTerrain.height + 8;
 
+            /* Height calculations below are deliberately unchanged. */
+
             m_setupTmpeSection = AddUIComponent<UIPanel>();
-            m_setupTmpeSection.width = 204f;
+            m_setupTmpeSection.width = PanelWidth;
             m_setupTmpeSection.clipChildren = true;
             var setupTmpe = UIUtil.CreateCheckBox(m_setupTmpeSection);
             setupTmpe.name = "RAB_setupTmpe";
-            setupTmpe.label.text = "Set up TMPE";
-            setupTmpe.tooltip = "Apply TMPE policies to the roundabout";
+            setupTmpe.label.text = Loc.L("RAB_CHK_SETUP_TMPE", "Set up TMPE");
+            setupTmpe.tooltip = Loc.L("RAB_TIP_SETUP_TMPE", "Apply TMPE policies to the roundabout");
             setupTmpe.isChecked = SavedSetupTmpe;
             setupTmpe.relativePosition = new Vector3(8, 0);
             setupTmpe.eventCheckChanged += (c, state) =>
@@ -177,7 +204,7 @@ namespace RoundaboutBuilder.UI
             };
             var tmpeButton = UIUtil.CreateButton(m_setupTmpeSection);
             tmpeButton.text = "...";
-            tmpeButton.tooltip = "TMPE settings";
+            tmpeButton.tooltip = Loc.L("RAB_TIP_TMPE_SETTINGS", "TMPE settings");
             tmpeButton.height = setupTmpe.height;
             tmpeButton.width = 30;
             tmpeButton.relativePosition = new Vector2(width - tmpeButton.width - 8, 0);
@@ -194,11 +221,11 @@ namespace RoundaboutBuilder.UI
 
             var keepOpen = UIUtil.CreateCheckBox(m_bottomSection);
             keepOpen.name = "RAB_keepOpen";
-            keepOpen.label.text = "Keep open";
-            keepOpen.tooltip = "Keep the window open after roundabout is built";
+            keepOpen.label.text = Loc.L("RAB_CHK_KEEP_OPEN", "Keep open");
+            keepOpen.tooltip = Loc.L("RAB_TIP_KEEP_OPEN", "Keep the window open after roundabout is built");
             keepOpen.isChecked = SavedKeepOpen.value;
             keepOpen.relativePosition = new Vector3(8, cummulativeHeight);
-            keepOpen.width = 196; // width - padding
+            keepOpen.width = PanelWidth - 8; // width - padding
             keepOpen.eventCheckChanged += (c, state) =>
             {
                 SavedKeepOpen.value = state;
@@ -207,7 +234,7 @@ namespace RoundaboutBuilder.UI
 
             // Back button
             backButton = UIUtil.CreateButton(m_bottomSection);
-            backButton.text = "Back";
+            backButton.text = Loc.L("RAB_BTN_BACK", "Back");
             backButton.relativePosition = new Vector2(8, cummulativeHeight);
             backButton.width = width - 16;
             backButton.eventClick += (c, p) =>
@@ -230,7 +257,7 @@ namespace RoundaboutBuilder.UI
             cummulativeHeight += backButton.height + 8;
 
             closeButton = UIUtil.CreateButton(m_bottomSection);
-            closeButton.text = "Close";
+            closeButton.text = Loc.L("RAB_BTN_CLOSE", "Close");
             closeButton.relativePosition = new Vector2(8, cummulativeHeight);
             closeButton.eventClick += (c, p) =>
             {
@@ -242,8 +269,8 @@ namespace RoundaboutBuilder.UI
             };
 
             undoButton = UIUtil.CreateButton(m_bottomSection);
-            undoButton.text = "Undo";
-            undoButton.tooltip = "Remove last built roundabout (CTRL+Z). Warning: Use only right after the roundabout has been built";
+            undoButton.text = Loc.L("RAB_BTN_UNDO", "Undo");
+            undoButton.tooltip = Loc.L("RAB_TIP_UNDO", "Remove last built roundabout (CTRL+Z). Warning: Use only right after the roundabout has been built");
             undoButton.relativePosition = new Vector2(16 + closeButton.width, cummulativeHeight);
             undoButton.isEnabled = false;
             undoButton.eventClick += (c, p) =>
@@ -296,7 +323,11 @@ namespace RoundaboutBuilder.UI
 
             if (tool is EllipseTool)
             {
-                SwitchWindow( P_EllipsePanel_1 );
+                SwitchWindow( P_EllipsePanel_3 != null ? (AbstractPanel)P_EllipsePanel_3 : P_RoundAboutPanel );
+            }
+            else if(tool is HelixTool)
+            {
+                SwitchWindow(P_HelixPanel != null ? (AbstractPanel)P_HelixPanel : P_RoundAboutPanel);
             }
             else if(tool is RoundaboutTool)
             {
@@ -311,12 +342,16 @@ namespace RoundaboutBuilder.UI
 
         public void InitPanels()
         {
+            Debug.Log("[RoundaboutBuilder] InitPanels: spiral=" + RoundAboutBuilder.EnableSpiralRamp.value
+                + ", legacyEllipse=" + RoundAboutBuilder.LegacyEllipticRoundabouts.value
+                + ", width=" + PanelWidth);
             //bool enabledS = this.enabled;
             //enabled = false;
             if(P_RoundAboutPanel != null)
             {
                 RemoveUIComponent(P_RoundAboutPanel);
                 RemoveUIComponent(P_FreeToolPanel);
+                if (P_HelixPanel != null) RemoveUIComponent(P_HelixPanel);
             }
             if(P_EllipsePanel_1 != null)
             {
@@ -325,13 +360,21 @@ namespace RoundaboutBuilder.UI
                 RemoveUIComponent(P_EllipsePanel_3);
             }
             P_RoundAboutPanel = AddUIComponent<RoundAboutPanel>();
+            Debug.Log("[RoundaboutBuilder] InitPanels: RoundAboutPanel built.");
             P_FreeToolPanel = AddUIComponent<FreeToolPanel>();
+            Debug.Log("[RoundaboutBuilder] InitPanels: FreeToolPanel built.");
+            if(RoundAboutBuilder.EnableSpiralRamp.value)
+            {
+                P_HelixPanel = AddUIComponent<HelixPanel>();
+                Debug.Log("[RoundaboutBuilder] InitPanels: HelixPanel built.");
+            }
             if(RoundAboutBuilder.LegacyEllipticRoundabouts.value)
             {
                 P_EllipsePanel_1 = AddUIComponent<EllipsePanel_1>();
                 P_EllipsePanel_2 = AddUIComponent<EllipsePanel_2>();
                 P_EllipsePanel_3 = AddUIComponent<EllipsePanel_3>();
             }
+            Debug.Log("[RoundaboutBuilder] InitPanels: done.");
            // this.enabled = enabledS;
         }
 
@@ -449,6 +492,7 @@ namespace RoundaboutBuilder.UI
             isVisible = true;
             if (toolOnUI != null)
                 toolOnUI.enabled = true;
+            UUIIntegration.SyncButtonState(true);
         }
 
         public override void OnDisable()
@@ -457,12 +501,31 @@ namespace RoundaboutBuilder.UI
             isVisible = false;
             if (toolOnUI != null)
                 toolOnUI.enabled = false;
+            UUIIntegration.SyncButtonState(false);
+        }
+
+        /* Recreates the tool window so it picks up a newly selected language. */
+        public static void Rebuild()
+        {
+            try
+            {
+                UIWindow oldWindow = instance;
+                if (oldWindow == null) return;
+
+                UnityEngine.Object.Destroy(oldWindow.gameObject);
+                UIView.GetAView().AddUIComponent(typeof(UIWindow));
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("[RoundaboutBuilder] Could not rebuild the tool window.");
+                Debug.LogWarning(e);
+            }
         }
 
         public void ThrowErrorMsg(string content, bool error = false)
         {
             ExceptionPanel panel = UIView.library.ShowModal<ExceptionPanel>("ExceptionPanel");
-            panel.SetMessage("Roundabout builder", content, error);
+            panel.SetMessage(Loc.L("RAB_ERR_TITLE", "Roundabout builder"), content, error);
         }
     }
 }

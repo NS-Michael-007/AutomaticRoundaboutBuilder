@@ -24,6 +24,9 @@ namespace RoundaboutBuilder.Tools
         private bool leftHandTraffic;
         private Ellipse ellipse;
         private NetInfo centerNodeNetInfo;
+        /* When the ring is built elevated or as a bridge, every node and segment uses
+         * this prefab instead of the one selected in the road dropdown. Null = ground. */
+        private NetInfo m_prefabOverride;
         private double m_maxAngDistance;
 
         public bool m_followTerrain { get; private set; }
@@ -33,13 +36,17 @@ namespace RoundaboutBuilder.Tools
         private ActionGroup actionGroupRoads;
         private WrappersDictionary wrappersDictionary;
 
+        /* Every segment this connector adds, so callers can post-process them once they exist
+         * (Network Skins pillar / street light hiding needs the segment ids). */
+        public readonly List<WrappedSegment> BuiltSegments = new List<WrappedSegment>();
+
         public int Cost => actionGroupRoads != null ? actionGroupRoads.DoCost() : 0;
 
         // Time to time something goes wrong. Let's make sure that we don't get stuck in infinite recursion.
         // Didn't happen to me since I degbugged it, but one never knows for sure.
         private int pleasenoinfiniterecursion;
 
-        public FinalConnector(NetInfo centerNodeNetInfo, EdgeIntersections2 edgeIntersections, Ellipse ellipse, bool insertControllingVertices, bool followTerrain, bool reverseDirection)
+        public FinalConnector(NetInfo centerNodeNetInfo, EdgeIntersections2 edgeIntersections, Ellipse ellipse, bool insertControllingVertices, bool followTerrain, bool reverseDirection, NetInfo prefabOverride = null)
         {
             intersections = edgeIntersections?.Intersections ?? new List<RoundaboutNode>();
             actionGroupTMPE = edgeIntersections?.ActionGroupTMPE ?? new ActionGroup("Set up TMPE");
@@ -49,13 +56,17 @@ namespace RoundaboutBuilder.Tools
             this.ellipse = ellipse;
             pleasenoinfiniterecursion = 0;
             this.centerNodeNetInfo = centerNodeNetInfo;
+            m_prefabOverride = prefabOverride;
             leftHandTraffic = Singleton<SimulationManager>.instance.m_metaData.m_invertTraffic ==
                                     SimulationMetaData.MetaBool.True;
             m_followTerrain = followTerrain;
             m_reverseDirection = reverseDirection;
 
-            // We ensure that the segments are not too long. For circles only (with ellipses it would be more difficult)
-            m_maxAngDistance = Math.Min(Math.PI * 25 / ellipse.RadiusMain , Math.PI/2 + 0.1d);
+            // We ensure that the segments are not too long. The ellipse segment count is the
+            // authoritative limit (one segment per 5 m of radius, e.g. 18 segments at r=90);
+            // 25 m of chord is kept as a second cap so the ring never looks polygonal.
+            m_maxAngDistance = Math.Min(Math.Min(Math.PI * 25 / ellipse.RadiusMain, Math.PI / 2 + 0.1d),
+                2 * Math.PI / Math.Max(ellipse.Density, Ellipse.DENSITY_MIN));
 
             bool isCircle = ellipse.IsCircle();
             if (!isCircle && insertControllingVertices)
@@ -64,16 +75,17 @@ namespace RoundaboutBuilder.Tools
                 InsertIntermediateNodes();
             }
 
-            /* If the list of edge nodes is empty, we add one default intersection. */
-            if (isCircle && intersections.Count == 0)
+            /* If there is nothing to connect to, we start the ring from one point on the ellipse.
+             * Circles always did this; free-standing ellipses (center placed anywhere) need it too. */
+            if (intersections.Count == 0)
             {
-                Vector3 defaultIntersection = new Vector3(ellipse.RadiusMain, 0, 0) + ellipse.Center;
+                Vector3 defaultIntersection = ellipse.VectorAtAngle(0);
                 defaultIntersection = new Vector3(defaultIntersection.x, m_followTerrain ? NetUtil.TerrainHeight(defaultIntersection) : defaultIntersection.y, defaultIntersection.z);
                 //ushort newNodeId = NetAccess.CreateNode(centerNodeNetInfo, defaultIntersection);
 
                 WrappedNode newNodeW = new WrappedNode();
                 newNodeW.Position = defaultIntersection;
-                newNodeW.NetInfo = centerNodeNetInfo;
+                newNodeW.NetInfo = m_prefabOverride != null ? m_prefabOverride : centerNodeNetInfo;
                 RoundaboutNode raNode = new RoundaboutNode(newNodeW);
                 raNode.Create(actionGroupRoads);
                 intersections.Add(raNode);
@@ -92,9 +104,9 @@ namespace RoundaboutBuilder.Tools
             
             for (int i = 0; i < count; i++)
             {
-                RoundaboutNode prevNode = intersections[i];
-                if (isCircle)
-                    prevNode = CheckAngularDistance(intersections[i], intersections[(i + 1) % count]);
+                /* Both circles and ellipses are subdivided so the built ring uses the same
+                 * segment count as the preview (one segment per 5 m of mean radius). */
+                RoundaboutNode prevNode = CheckAngularDistance(intersections[i], intersections[(i + 1) % count]);
                 ConnectNodes(intersections[(i + 1) % count], prevNode);
             }
 
@@ -102,8 +114,14 @@ namespace RoundaboutBuilder.Tools
             actionGroupRoads.ItemClass = centerNodeNetInfo.m_class;
         }
 
-        public void Build()
+        public void Build(GameAction extraAction = null)
         {
+            /* Optional tail action, e.g. the Network Skins pass. It runs after all segments
+             * of this ring exist, inside the same action group. */
+            if (extraAction != null)
+            {
+                actionGroupRoads.Actions.Add(extraAction);
+            }
             ModThreading.PushAction(actionGroupRoads, actionGroupTMPE);
         }
 
@@ -192,8 +210,9 @@ namespace RoundaboutBuilder.Tools
         {
             bool invert = leftHandTraffic ^ m_reverseDirection;
 
-            vectorNode1.Create(actionGroupRoads,centerNodeNetInfo);
-            vectorNode2.Create(actionGroupRoads,centerNodeNetInfo);
+            NetInfo buildInfo = m_prefabOverride != null ? m_prefabOverride : centerNodeNetInfo;
+            vectorNode1.Create(actionGroupRoads,buildInfo);
+            vectorNode2.Create(actionGroupRoads,buildInfo);
 
             /* NetNode node1 = GetNode(vectorNode1.nodeId);
              NetNode node2 = GetNode(vectorNode2.nodeId);*/
@@ -212,7 +231,7 @@ namespace RoundaboutBuilder.Tools
             EllipseTool.Instance.debugDrawVector(10*vec2, vectorNode2.vector);*/
 
             //NetInfo netPrefab = PrefabCollection<NetInfo>.FindLoaded("Oneway Road");
-            NetInfo netPrefab = UI.UIWindow.instance.dropDown.Value;
+            NetInfo netPrefab = m_prefabOverride != null ? m_prefabOverride : UI.UIWindow.instance.dropDown.Value;
             //ushort newSegmentId = NetAccess.CreateSegment(vectorNode1.nodeId, vectorNode2.nodeId, vec1, vec2, netPrefab, invert, leftHandTraffic, true);
             WrappedSegment newSegment = new WrappedSegment();
             newSegment.StartNode = vectorNode1.wrappedNode;
@@ -225,6 +244,7 @@ namespace RoundaboutBuilder.Tools
             newSegment.DeployPlacementEffects = true;
 
             actionGroupRoads.Actions.Add(newSegment);
+            BuiltSegments.Add(newSegment);
 
 
             try

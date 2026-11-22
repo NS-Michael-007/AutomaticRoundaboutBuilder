@@ -1,0 +1,179 @@
+# 環島建造器 - 繁體中文
+# 格式：鍵 值（每行一條，鍵與值之間用一個空格分隔）。值中的 \n 表示換行。
+
+RAB_LANGUAGE_CODE zh-tw
+RAB_LANGUAGE_NAME 繁體中文
+
+# --- 模組資訊 ---
+RAB_MOD_NAME 環島建造器
+RAB_MOD_DESC 按 CTRL+O 開啟模組選單
+
+# --- 設定頁面 ---
+RAB_LANGUAGE_LABEL 語言
+RAB_LANGUAGE_AUTO 自動（跟隨系統語言）
+
+RAB_OPT_TWO_WAY 允許選擇雙向道路
+RAB_OPT_TWO_WAY_DESC 在道路選單中可選擇雙向道路作為環島用路（需先開啟對應選項）
+RAB_OPT_NO_ROADS 不刪除、也不連接任何道路（實驗性）
+RAB_OPT_NO_ROADS_DESC 建造環島時不刪除或連接任何道路
+RAB_OPT_FOLLOW_ROAD 使用道路選單中目前選取的道路作為環島用路
+RAB_OPT_FOLLOW_ROAD_DESC 在道路選單中切換道路時，環島用路會隨之改變
+RAB_OPT_TOOLBAR_BUTTON 在工具列顯示模組圖示（需重新載入）
+RAB_OPT_TOOLBAR_BUTTON_DESC 在道路工具面板顯示環島建造器圖示（任何時候都可以用 CTRL+O 開啟模組選單）
+RAB_OPT_DOCK_UUI 停靠 Unified UI
+RAB_OPT_DOCK_UUI_DESC 在 Unified UI 工具列中顯示環島按鈕（需要安裝 Unified UI 模組）。關閉後只保留原版工具列按鈕
+RAB_UUI_TOOLTIP 環島建造器
+RAB_OPT_EXTRA_KEYS 使用備用的半徑增大 / 減小快速鍵
+RAB_OPT_EXTRA_KEYS_DESC 勾選後，除數字鍵盤 +/- 外，還可以用下方綁定的按鍵調整半徑
+RAB_OPT_OLD_SNAP 遺留：使用舊版吸附演算法
+RAB_OPT_OLD_SNAP_DESC 舊演算法以 90° 角連接道路，但會使道路幾何變形
+RAB_OPT_NO_PREFAB_FILTER 不過濾預設（選單中包含所有道路網路）
+RAB_OPT_NO_PREFAB_FILTER_DESC 下拉選單將列出全部可用預設，而不只是單向道路
+RAB_OPT_NEED_MONEY 需要花錢
+RAB_OPT_NEED_MONEY_DESC 建造環島將消耗你的資金
+RAB_OPT_CTRL_REVERSE 按住 CTRL 反向建造
+RAB_OPT_CTRL_REVERSE_DESC 按住 CTRL 時，環島將以相反方向建造
+RAB_OPT_UNLIMITED_RADIUS 無限半徑
+RAB_OPT_UNLIMITED_RADIUS_DESC （幾乎）無限大的環島半徑 - 最大 20 000 單位
+RAB_OPT_LEGACY_ELLIPSE 遺留：橢圓環島
+RAB_OPT_LEGACY_ELLIPSE_DESC 啟用橢圓環島。此功能已不再維護
+
+RAB_BTN_RESET_POS 重設工具視窗位置
+RAB_BTN_REMOVE_GLITCHED 清除損壞的道路（請先儲存遊戲）
+
+RAB_EASTER_EGG 恭喜！你一共建造了 {0} 個環島！你住在法國嗎？\n冷知識：法國有超過 32000 個環島，大約每 30 公里就有一個。但按每公里環島數量計算，英國才是世界第一（共 25000 個，約每 15 公里一個）。感謝 Quora 的 Scott Batson 提供這份 2015 年的統計。
+
+# --- 工具視窗 ---
+RAB_WIN_TITLE 環島建造器
+RAB_LBL_RADIUS 半徑：
+RAB_TIP_PLUS_MINUS 按 +/- 調整
+RAB_BTN_FREE_CURSOR 自由游標模式...
+RAB_TIP_FREE_CURSOR 可在任意位置建造環島（注意！不會刪除或連接道路）
+RAB_BTN_ELLIPSE 橢圓環島...
+RAB_TIP_NETWORK_ANARCHY 提示：高架道路請配合 Network Anarchy 使用
+
+RAB_LBL_ELEVATION 高程：
+RAB_TIP_ELEVATION 按 PgUp/PgDn 調整
+RAB_TIP_ELEVATION_FIELD 按 PgUp/PgDn/Home 調整 - 高程取自道路工具
+RAB_WARN_FREE_TOOL 不會刪除或連接道路\n高架道路請配合 Network Anarchy 使用
+RAB_CHK_ABSOLUTE_ELEVATION 絕對高程
+RAB_TIP_ABSOLUTE_ELEVATION 高程從零平面起算，而不是以地形高度為基準
+
+RAB_PANEL_STEP1 第 1/3 步：\n選擇橢圓環島的中心（此時不會建造任何東西）
+RAB_PANEL_STEP2 第 2/3 步：\n選擇環島主軸方向上的任意交叉口（此時不會建造任何東西）
+RAB_LBL_MAIN_AXIS 主軸：
+RAB_LBL_MINOR_AXIS 短軸：
+RAB_LBL_ANGLE 角度：
+RAB_TIP_ALT_PLUS_MINUS 按住 ALT +/- 以 15 度旋轉
+RAB_LBL_ELLIPSE_STRUCT 結構：
+RAB_TIP_ELLIPSE_STRUCT 地面 / 高架 / 橋樑。高架和橋樑使用所選道路在 Network Anarchy 裡的對應變體
+RAB_STRUCT_GROUND 地面
+RAB_ERR_ELLIPSE_NO_VARIANT 這條道路沒有{0}變體，換一種結構或換一條道路
+RAB_CHK_SNAP_CENTER 中心吸附路口
+RAB_TIP_SNAP_CENTER 勾選：橢圓替換已有交叉口；取消：滑鼠所在位置作為中心，建一個獨立橢圓環
+RAB_ERR_NO_NET 沒有選擇道路
+RAB_TIP_SHIFT_PLUS_MINUS 按 SHIFT +/- 調整
+RAB_TIP_CTRL_PLUS_MINUS 按 CTRL +/- 調整
+RAB_BTN_BUILD 建造
+RAB_CHK_CONTROL_POINTS 插入控制點
+RAB_TIP_CONTROL_POINTS 在主軸上插入控制點以保持橢圓形狀。詳見創意工坊頁面
+
+RAB_LBL_TMPE_SETTINGS TMPE 設定
+RAB_TMPE_ENTER_MAIN 進入堵塞路口（主路）
+RAB_TIP_TMPE_ENTER_MAIN 允許環島上的車輛駛入已堵塞的路口（TMPE 策略）
+RAB_TMPE_ENTER_YIELD 進入堵塞路口（讓行路）
+RAB_TIP_TMPE_ENTER_YIELD 允許進入環島的車輛駛入已堵塞的路口（TMPE 策略）
+RAB_TMPE_NO_PARKING 禁止停車
+RAB_TIP_TMPE_NO_PARKING 禁止在環島上停車（TMPE 策略）
+RAB_TMPE_PRIORITY 優先權標誌
+RAB_TIP_TMPE_PRIORITY 環島上的車輛擁有優先通行權
+RAB_TMPE_NO_CROSSINGS 停用行人穿越道
+RAB_TIP_TMPE_NO_CROSSINGS 禁止行人穿越至環島內圈（不改變視覺外觀）
+RAB_TMPE_LANE_CHANGING 允許變換車道
+RAB_TIP_TMPE_LANE_CHANGING 允許車輛在交叉口變換車道（主路與進入道路均適用）
+
+RAB_CHK_LEVEL_TERRAIN 壓平地形
+RAB_TIP_LEVEL_TERRAIN 讓環島各段保持同一高度
+RAB_CHK_SETUP_TMPE 自動設定 TMPE
+RAB_TIP_SETUP_TMPE 對環島套用 TMPE 策略
+RAB_BTN_TMPE_SETTINGS ...
+RAB_TIP_TMPE_SETTINGS TMPE 設定
+RAB_CHK_KEEP_OPEN 保持開啟
+RAB_TIP_KEEP_OPEN 建造完成後視窗保持開啟
+RAB_BTN_BACK 返回
+RAB_BTN_CLOSE 關閉
+RAB_BTN_UNDO 復原
+RAB_TIP_UNDO 移除上一次建造的環島（CTRL+Z）。注意：僅在建成後立即使用
+RAB_TIP_WORKSHOP 環島建造器 [{0}] by Strad\n在創意工坊中開啟
+RAB_ERR_TITLE 環島建造器
+
+# --- 工具提示 ---
+RAB_TIP_REACTIVATE 點擊視窗內部以重新啟用工具
+RAB_TIP_ANY_NETWORK 提示：可配合任意道路網路使用（見設定）
+RAB_TIP_SMART_INTERSECTION 提示：試試 Smart Intersection Builder！
+RAB_TIP_ADJUST_PATHFINDING 提示：試試 Adjust Pathfinding 模組！
+RAB_HOVER_COST 造價：{0}\n點擊建造\n按 +/- 調整半徑
+RAB_HOVER_INVALID_RADIUS 半徑無效\n按 +/- 調整半徑
+RAB_HOVER_HOVER_INTERSECTION 將滑鼠移到交叉口上
+RAB_HOVER_SELECT_CENTER 選擇橢圓環島的中心
+RAB_HOVER_SELECT_AXIS 選擇主軸方向上的任意交叉口
+RAB_HOVER_ELLIPSE_CLICK {0} 段\n點擊建造，面板裡調整
+RAB_HOVER_ELLIPSE_INVALID 半徑或角度無效\n請檢查面板裡的數值
+RAB_HOVER_ELLIPSE_CENTER 把滑鼠移到中心交叉口上
+RAB_ERR_NO_ELLIPSE 請先把滑鼠移到中心交叉口上！
+
+# --- 錯誤訊息 ---
+RAB_ERR_RADIUS_BOUNDS 半徑超出範圍！
+RAB_ERR_ELEVATION_BOUNDS 高程超出範圍！
+RAB_ERR_INVALID_RADII 半徑無效！
+RAB_ERR_SAME_NODE 你選擇了同一個交叉口！
+RAB_ERR_NOT_ENOUGH_MONEY 扣款失敗：資金不足
+
+# --- 工具列 ---
+RAB_TIP_TOOLBAR_BUTTON 環島建造器（CTRL+O）
+
+# --- 快速鍵 ---
+RAB_KEY_MOD_SHORTCUT 模組快速鍵
+RAB_KEY_INCREASE 增大半徑（備用）
+RAB_KEY_DECREASE 減小半徑（備用）
+RAB_KEY_PRESS_ANY 請按任意鍵
+
+# --- 損壞道路清理 ---
+RAB_GLITCH_NOT_INGAME_TITLE 不在遊戲中
+RAB_GLITCH_NOT_INGAME_MSG 請在進入遊戲後使用此按鈕清除損壞的道路
+RAB_GLITCH_TITLE 正在清除損壞的道路段
+RAB_GLITCH_ERROR 錯誤：未處理的例外：{0}。可能出了非常嚴重的問題，建議重新載入最近的存檔。（已移除路段：{1}）
+RAB_GLITCH_REMOVED 已移除 {0} 段道路{1}！請檢查遊戲是否出現異常，並把結果另存為新檔案。
+RAB_GLITCH_NONE 未發現損壞的道路段。
+
+# --- 螺旋匝道 ---
+RAB_BTN_SPIRAL_RAMP 螺旋匝道…
+RAB_TIP_SPIRAL_RAMP 建造一邊繞圈一邊爬升的螺旋匝道（兩端由你自己接路）
+RAB_OPT_SPIRAL_RAMP 啟用螺旋匝道（實驗功能）
+RAB_OPT_SPIRAL_RAMP_DESC 在主面板裡增加螺旋匝道工具。匝道兩端保持開口，由你自己接到道路上
+RAB_LBL_SPIRAL_RADIUS 半徑：
+RAB_TIP_SPIRAL_RADIUS 匝道中心線的半徑
+RAB_LBL_SPIRAL_HEIGHT 高度：
+RAB_TIP_SPIRAL_HEIGHT 整條匝道總共爬升的高度
+RAB_LBL_SPIRAL_TURNS 圈數：
+RAB_TIP_SPIRAL_TURNS 匝道繞幾整圈
+RAB_CHK_SPIRAL_REVERSE 反向
+RAB_TIP_SPIRAL_REVERSE 反方向建造這條匝道
+RAB_SPIRAL_WARN 兩端保持開口——請自行接到你的道路上
+RAB_SPIRAL_INFO {0} 段，坡度 {1}%\n點擊建造
+RAB_ERR_SPIRAL_FIELDS 請填寫半徑、高度和圈數
+RAB_ERR_SPIRAL_TOO_SMALL 半徑太小，段長只有 {0}——請加大半徑
+RAB_ERR_SPIRAL_TOO_STEEP 坡度 {0}% 太陡：請加大半徑、降低高度或增加圈數
+RAB_ERR_SPIRAL_NO_NET 沒有選擇道路
+RAB_SPIRAL_ACTION_NAME 建造螺旋匝道
+RAB_LBL_SPIRAL_STRUCT 結構：
+RAB_TIP_SPIRAL_STRUCT 螺旋用什麼形態建造：地面、高架、橋樑；自動=跟隨 Network Anarchy 目前模式
+RAB_STRUCT_AUTO 自動
+RAB_STRUCT_ELEVATED 高架
+RAB_STRUCT_BRIDGE 橋樑
+RAB_ERR_SPIRAL_NO_VARIANT 這條道路沒有{0}版本——請換一種形態或換條路
+RAB_LBL_SPIRAL_TAIL 末端偏轉：
+RAB_TIP_SPIRAL_TAIL 整圈之後再多走多少度；填 180 末端就落在起點正對面
+
+RAB_OPT_NS_HIDE 隱藏橋墩與路燈（需要 Network Skins）
+RAB_OPT_NS_HIDE_DESC 用橋樑或高架形態建的螺旋匝道不產生橋墩、不產生路燈。需要 Network Skins Continued；沒裝、或某個車道 prop 沒被辨識成路燈時，只寫一行日誌、不做改動

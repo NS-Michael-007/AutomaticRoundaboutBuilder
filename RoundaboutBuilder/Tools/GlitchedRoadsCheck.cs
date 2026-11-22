@@ -21,7 +21,7 @@ namespace RoundaboutBuilder.Tools
             if (!ModLoadingExtension.LevelLoaded)
             {
                 ExceptionPanel notLoaded = UIView.library.ShowModal<ExceptionPanel>("ExceptionPanel");
-                notLoaded.SetMessage("Not In-Game", "Use this button when in-game to remove glitched roads", false);
+                notLoaded.SetMessage(Loc.L("RAB_GLITCH_NOT_INGAME_TITLE", "Not In-Game"), Loc.L("RAB_GLITCH_NOT_INGAME_MSG", "Use this button when in-game to remove glitched roads"), false);
                 return;
             }
 
@@ -82,18 +82,18 @@ namespace RoundaboutBuilder.Tools
             }
             if (unhandledExceptions > 0)
             {
-                message = "ERROR: Unhandled exceptions: " + unhandledExceptions + ". Maybe something went VERY VERY wrong. You should reload last save. (Segments removed: " + count + ")";
+                message = Loc.L("RAB_GLITCH_ERROR", "ERROR: Unhandled exceptions: {0}. Maybe something went VERY VERY wrong. You should reload last save. (Segments removed: {1})", unhandledExceptions, count);
             }
             else if (count > 0)
             {
-                message = $"Removed {count} segment{(count == 1 ? "" : "s")}! Please check that nothing unpleasant has happened to your game. Save it in a new file.";
+                message = Loc.L("RAB_GLITCH_REMOVED", "Removed {0} segment{1}! Please check that nothing unpleasant has happened to your game. Save it in a new file.", count, count == 1 ? "" : "s");
             }
             else
             {
-                message = "No glitched segments found.";
+                message = Loc.L("RAB_GLITCH_NONE", "No glitched segments found.");
             }
             
-            panel.SetMessage("Removing glitched segments", message, false);
+            panel.SetMessage(Loc.L("RAB_GLITCH_TITLE", "Removing glitched segments"), message, false);
         }
 
         private static bool TraverseVehicleConnections(ushort nodeId, ushort startSegmentId, ushort initialSegmentId, int recursionCounter)

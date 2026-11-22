@@ -12,9 +12,43 @@ namespace RoundaboutBuilder.Tools
     public class Ellipse
     {
         /* Y-axis squished to zero */
-        /* The ellipse will be drawn using #DENSITY segments. Four should be enough.
-         * From ellipse geometry should be multiple of four, so that the points hit the four main control points. */
-        public static readonly int DENSITY = 8;
+        /* The ellipse is drawn and intersected using #Density segments. The count follows
+         * the mean radius by plain division: one segment per 5 m of radius, so 30 -> 6,
+         * 40 -> 8, 60 -> 12 and 90 -> 18 segments. It grows and shrinks with the radius. */
+        public const int DENSITY_MIN = 4;
+        public const int DENSITY_MAX = 256;
+        public const float METERS_PER_SEGMENT = 5f;
+        /* True ellipses are divided by perimeter, not by mean radius: one segment per
+         * 12 m of circumference keeps the ring smooth even when the shape is eccentric.
+         * A 60 / 25 ellipse (perimeter ~278 m) gets 23 segments this way. */
+        public const float ELLIPSE_CHORD = 12f;
+
+        public int Density { get; private set; }
+
+        public static int DensityFor(float radiusMain, float radiusMinor)
+        {
+            double density;
+            if (Math.Abs(radiusMain - radiusMinor) < 0.05f)
+            {
+                /* Circles keep the old rule the player is used to: one segment per 5 m of radius. */
+                density = radiusMain / METERS_PER_SEGMENT;
+            }
+            else
+            {
+                /* Ramanujan's perimeter of an ellipse. */
+                float a = radiusMain;
+                float b = radiusMinor;
+                float h = (a - b) / (a + b);
+                h *= h;
+                double perimeter = Math.PI * (a + b) * (1 + 3 * h / (10 + Math.Sqrt(4 - 3 * h)));
+                density = perimeter / ELLIPSE_CHORD;
+            }
+
+            int result = (int)Math.Round(density);
+            if (result < DENSITY_MIN) result = DENSITY_MIN;
+            if (result > DENSITY_MAX) result = DENSITY_MAX;
+            return result;
+        }
 
         public float RadiusMain { get; private set; }
         public float RadiusMinor { get; private set; }
@@ -38,6 +72,7 @@ namespace RoundaboutBuilder.Tools
             RadiusMinor = radiusMinor;
             this.mainAxisDirection = mainAxisDirection;
             Ratio = ((double)RadiusMinor) / ((double)RadiusMain);
+            Density = DensityFor(RadiusMain, RadiusMinor);
             EllipseRotation = VectorsAngle(mainAxisDirection);
             CalculateFocals();
             calculateBeziers();
@@ -57,25 +92,25 @@ namespace RoundaboutBuilder.Tools
         /* Well, the vector density is uniform on the circle, but not on the ellipse. But whatever... */
         private void calculateBeziers()
         {
-            if (DENSITY < 4) Beziers = null;
+            if (Density < DENSITY_MIN) Beziers = null;
             List<Vector3> vectors = new List<Vector3>();
             List<Vector3> tangents = new List<Vector3>();
             List<Bezier2> beziers = new List<Bezier2>();
 
-            double angle = (2 * Math.PI) / DENSITY;
+            double angle = (2 * Math.PI) / Density;
 
-            for( int i = 0; i < DENSITY; i++)
+            for( int i = 0; i < Density; i++)
             {             
                 vectors.Add( VectorAtAngle(angle * i) );
                 tangents.Add( TangentAtAngle(angle * i) );
             }
 
-            for (int i = 0; i < DENSITY; i++)
+            for (int i = 0; i < Density; i++)
             {
                 Bezier3 bezier = new Bezier3();
                 bezier.a = vectors[i];
-                bezier.d = vectors[(i + 1) % DENSITY]; // line below: false false or something else?
-                NetSegment.CalculateMiddlePoints(bezier.a, tangents[i], bezier.d, -1 * tangents[(i + 1) % DENSITY], false, false, out bezier.b, out bezier.c);
+                bezier.d = vectors[(i + 1) % Density]; // line below: false false or something else?
+                NetSegment.CalculateMiddlePoints(bezier.a, tangents[i], bezier.d, -1 * tangents[(i + 1) % Density], false, false, out bezier.b, out bezier.c);
                 beziers.Add(Bezier2.XZ(bezier));
             }
 

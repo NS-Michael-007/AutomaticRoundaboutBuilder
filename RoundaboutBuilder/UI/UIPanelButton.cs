@@ -52,7 +52,7 @@ namespace RoundaboutBuilder.UI
             //focusedBgSprite = "RoundaboutButtonBgPressed";
             focusedBgSprite = "RoundaboutButtonBg";
             playAudioEvents = true;
-            tooltip = "Roundabout Builder (CTRL+O)";
+            tooltip = Loc.L("RAB_TIP_TOOLBAR_BUTTON", "Roundabout Builder (CTRL+O)");
             normalFgSprite = (disabledFgSprite = (hoveredFgSprite = (focusedFgSprite = "RoundaboutIcon")));
             pressedFgSprite = "RoundaboutIconPressed";
             relativePosition = new Vector3(BUTTON_HORIZONTAL_POSITION, 38f); //94,38

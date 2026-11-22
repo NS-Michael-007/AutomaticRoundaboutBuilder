@@ -16,9 +16,9 @@ namespace RoundaboutBuilder.UI
         // Token: 0x06000023 RID: 35 RVA: 0x000036B8 File Offset: 0x000018B8
         private void Awake()
         {
-            AddKeymapping("Mod shortcut", RoundAboutBuilder.ModShortcut);
-            AddKeymapping("Increase radius (secondary)", RoundAboutBuilder.IncreaseShortcut);
-            AddKeymapping("Decrease radius (secondary)", RoundAboutBuilder.DecreaseShortcut);
+            AddKeymapping(Loc.L("RAB_KEY_MOD_SHORTCUT", "Mod shortcut"), RoundAboutBuilder.ModShortcut);
+            AddKeymapping(Loc.L("RAB_KEY_INCREASE", "Increase radius (secondary)"), RoundAboutBuilder.IncreaseShortcut);
+            AddKeymapping(Loc.L("RAB_KEY_DECREASE", "Decrease radius (secondary)"), RoundAboutBuilder.DecreaseShortcut);
         }
 
         // Token: 0x06000024 RID: 36 RVA: 0x00003718 File Offset: 0x00001918
@@ -152,7 +152,7 @@ namespace RoundaboutBuilder.UI
                 this.m_EditingBindingCategory = p.source.stringUserData;
                 UIButton uibutton = p.source as UIButton;
                 uibutton.buttonsMask = (UIMouseButton.Left | UIMouseButton.Right | UIMouseButton.Middle | UIMouseButton.Special0 | UIMouseButton.Special1 | UIMouseButton.Special2 | UIMouseButton.Special3);
-                uibutton.text = "Press any key";
+                uibutton.text = Loc.L("RAB_KEY_PRESS_ANY", "Press any key");
                 p.source.Focus();
                 UIView.PushModal(p.source);
                 return;

@@ -25,13 +25,13 @@ namespace RoundaboutBuilder
             float? radiusQ = UIWindow.instance.P_FreeToolPanel.RadiusField.Value;
             if (radiusQ == null)
             {
-                UIWindow.instance.ThrowErrorMsg("Radius out of bounds!");
+                UIWindow.instance.ThrowErrorMsg(Loc.L("RAB_ERR_RADIUS_BOUNDS", "Radius out of bounds!"));
                 return;
             }
             float? elevationFieldQ = UIWindow.instance.P_FreeToolPanel.ElevationField.Value;
             if (elevationFieldQ == null)
             {
-                UIWindow.instance.ThrowErrorMsg("Elevation out of bounds!");
+                UIWindow.instance.ThrowErrorMsg(Loc.L("RAB_ERR_ELEVATION_BOUNDS", "Elevation out of bounds!"));
                 return;
             }
 
@@ -53,19 +53,55 @@ namespace RoundaboutBuilder
 
             if(vector.y < 0 || vector.y > 1000)
             {
-                UIWindow.instance.ThrowErrorMsg("Elevation out of bounds!");
+                UIWindow.instance.ThrowErrorMsg(Loc.L("RAB_ERR_ELEVATION_BOUNDS", "Elevation out of bounds!"));
                 return;
             }
 
             /* These lines of code do all the work. See documentation in respective classes. */
             /* When the old snapping algorithm is enabled, we create secondary (bigger) ellipse, so the newly connected roads obtained by the 
              * graph traveller are not too short. They will be at least as long as the padding. */
+            /* Which prefab this circle is made of: ground, elevated or bridge. */
+            NetInfo groundInfo = UIWindow.instance.dropDown.Value;
+            NetInfo buildInfo = groundInfo;
+            RampStructure structure = UIWindow.instance.P_FreeToolPanel.Structure;
+            if (structure != RampStructure.Auto)
+            {
+                string missing;
+                buildInfo = StructureVariants.Resolve(groundInfo, structure, out missing);
+                if (buildInfo == null)
+                {
+                    UIWindow.instance.ThrowErrorMsg(Loc.L("RAB_ERR_ELLIPSE_NO_VARIANT",
+                        "{0} is not available for this road. Pick another structure or another road", missing));
+                    return;
+                }
+                if (!StructureVariants.CanBeRaised(buildInfo))
+                {
+                    UIWindow.instance.ThrowErrorMsg(Loc.L("RAB_ERR_ELLIPSE_NO_VARIANT",
+                        "{0} is not available for this road. Pick another structure or another road",
+                        structure.ToString()));
+                    return;
+                }
+                Debug.Log("[RoundaboutBuilder] Free tool structure=" + structure + ", prefab=" + buildInfo.name
+                    + ", ground prefab=" + (groundInfo != null ? groundInfo.name : "null"));
+            }
+
             Ellipse ellipse = new Ellipse(vector, new Vector3(0f, 0f, 0f), radius, radius);
             bool reverseDirection = (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && RoundAboutBuilder.CtrlToReverseDirection.value;
             try
             {
-                FinalConnector finalConnector = new FinalConnector(UI.UIWindow.instance.dropDown.Value, null, ellipse, false, elevation == 0 ? GetFollowTerrain() : false,reverseDirection);
-                finalConnector.Build();
+                NetInfo prefabOverride = structure != RampStructure.Auto ? buildInfo : null;
+                FinalConnector finalConnector = new FinalConnector(UI.UIWindow.instance.dropDown.Value, null, ellipse, false, elevation == 0 ? GetFollowTerrain() : false, reverseDirection, prefabOverride);
+
+                /* Optional Network Skins pass, same as the spiral and the ellipse. */
+                GameAction nsAction = null;
+                NetInfo skinsPrefab = prefabOverride != null ? prefabOverride : groundInfo;
+                if (RoundAboutBuilder.HidePillarsAndLights.value && NetworkSkinsHook.IsAvailable() && skinsPrefab != null)
+                {
+                    NetworkSkinsHook.ReportSupport(skinsPrefab);
+                    nsAction = new NetworkSkinsAction(finalConnector.BuiltSegments, skinsPrefab);
+                }
+
+                finalConnector.Build(nsAction);
                 // Easter egg
                 RoundAboutBuilder.EasterEggToggle();
             }

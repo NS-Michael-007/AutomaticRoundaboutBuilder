@@ -37,27 +37,27 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>D:\SteamLibrary\steamapps\common\Cities_Skylines\Cities_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="ColossalManaged, Version=0.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed\ColossalManaged.dll</HintPath>
+      <HintPath>D:\SteamLibrary\steamapps\common\Cities_Skylines\Cities_Data\Managed\ColossalManaged.dll</HintPath>
     </Reference>
     <Reference Include="CSUtil.Commons">
-      <HintPath>..\..\CSUtil.Commons.dll</HintPath>
+      <HintPath>D:\SteamLibrary\steamapps\workshop\content\255710\1637663252\CSUtil.Commons.dll</HintPath>
     </Reference>
     <Reference Include="FineRoadTool">
       <HintPath>..\..\FineRoadTool.dll</HintPath>
     </Reference>
     <Reference Include="ICities, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed\ICities.dll</HintPath>
+      <HintPath>D:\SteamLibrary\steamapps\common\Cities_Skylines\Cities_Data\Managed\ICities.dll</HintPath>
     </Reference>
     <Reference Include="Ionic.Zip">
       <HintPath>..\..\Ionic.Zip.dll</HintPath>
     </Reference>
     <Reference Include="NetworkAnarchy">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\workshop\content\255710\2862881785\NetworkAnarchy.dll</HintPath>
+      <HintPath>D:\SteamLibrary\steamapps\workshop\content\255710\2862881785\NetworkAnarchy.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -66,19 +66,24 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="TrafficManager">
-      <HintPath>..\..\TrafficManager.dll</HintPath>
+      <HintPath>D:\SteamLibrary\steamapps\workshop\content\255710\1637663252\TrafficManager.dll</HintPath>
+    </Reference>
+    <Reference Include="UnifiedUILib">
+      <HintPath>..\..\UnifiedUILib.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>D:\SteamLibrary\steamapps\common\Cities_Skylines\Cities_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutomaticRoundaboutBuilder.cs" />
     <Compile Include="EllipseTool.cs" />
+    <Compile Include="HelixTool.cs" />
     <Compile Include="FreeCursorTool.cs" />
     <Compile Include="NetWrappers\AbstractNetWrapper.cs" />
     <Compile Include="NetWrappers\WrappedNode.cs" />
     <Compile Include="GameActions\AbstractAction.cs" />
+    <Compile Include="Localization\Loc.cs" />
     <Compile Include="GameActions\TmpeActions.cs" />
     <Compile Include="NetWrappers\WrappedSegment.cs" />
     <Compile Include="NetWrappers\WrappersDictionary.cs" />
@@ -87,6 +92,9 @@
     <Compile Include="Tools\SettingsBool.cs" />
     <Compile Include="Tools\EdgeIntersections2.cs" />
     <Compile Include="Tools\Ellipse.cs" />
+    <Compile Include="Tools\HelixPath.cs" />
+    <Compile Include="Tools\StructureVariants.cs" />
+    <Compile Include="Tools\NetworkSkinsHook.cs" />
     <Compile Include="Tools\FinalConnector.cs" />
     <Compile Include="ModLoadingExtension.cs" />
     <Compile Include="ModThreading.cs" />
@@ -95,6 +103,7 @@
     <Compile Include="Tools\NetUtil.cs" />
     <Compile Include="Tools\RoundaboutNode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UI\HelixPanel.cs" />
     <Compile Include="UI\HoveringLabel.cs" />
     <Compile Include="UI\KeyMappings.cs" />
     <Compile Include="UI\NumericTextField.cs" />
@@ -103,16 +112,24 @@
     <Compile Include="UI\UIPanelButton.cs" />
     <Compile Include="UI\UIUtil.cs" />
     <Compile Include="UI\UIWindow.cs" />
+    <Compile Include="UI\UUIIntegration.cs" />
     <Compile Include="UI\Windows.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="README.txt" />
+    <Content Include="Translations\lang.txt" />
+    <Content Include="Translations\lang_zh-cn.txt" />
+    <Content Include="Translations\lang_zh-tw.txt" />
+    <Content Include="uui_roundabout_builder.png" />
     <EmbeddedResource Include="Resources\sprites.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>mkdir "%25LOCALAPPDATA%25\Colossal Order\Cities_Skylines\Addons\Mods\$(SolutionName)"
 del "%25LOCALAPPDATA%25\Colossal Order\Cities_Skylines\Addons\Mods\$(SolutionName)\$(TargetFileName)"
-xcopy /y "$(TargetPath)" "%25LOCALAPPDATA%25\Colossal Order\Cities_Skylines\Addons\Mods\$(SolutionName)"</PostBuildEvent>
+xcopy /y "$(TargetPath)" "%25LOCALAPPDATA%25\Colossal Order\Cities_Skylines\Addons\Mods\$(SolutionName)"
+xcopy /y /s /i "$(ProjectDir)Translations" "%25LOCALAPPDATA%25\Colossal Order\Cities_Skylines\Addons\Mods\$(SolutionName)\Translations"
+xcopy /y "$(ProjectDir)uui_roundabout_builder.png" "%25LOCALAPPDATA%25\Colossal Order\Cities_Skylines\Addons\Mods\$(SolutionName)"
+xcopy /y "$(ProjectDir)..\..\UnifiedUILib.dll" "%25LOCALAPPDATA%25\Colossal Order\Cities_Skylines\Addons\Mods\$(SolutionName)"</PostBuildEvent>
   </PropertyGroup>
 </Project>

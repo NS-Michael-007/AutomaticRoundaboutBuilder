@@ -61,6 +61,15 @@ namespace RoundaboutBuilder
 
             //Ads.Destroy();
             //Debug.Log(_string);
+
+            // Unified UI may be loaded after this mod, try the registration again.
+            try
+            {
+                UUIIntegration.RegisterIfEnabled();
+            }
+            catch
+            {
+            }
         }
 
         // called when level is loaded
@@ -78,12 +87,23 @@ namespace RoundaboutBuilder
                 EllipseTool.Instance.enabled = false;
                 FreeCursorTool.Instance = toolController.gameObject.AddComponent<FreeCursorTool>();
                 FreeCursorTool.Instance.enabled = false;
+                HelixTool.Instance = toolController.gameObject.AddComponent<HelixTool>();
+                HelixTool.Instance.enabled = false;
             }
 
             //instatiate UI
             if (UIWindow.instance == null)
             {
                 UIView.GetAView().AddUIComponent(typeof(UIWindow));
+            }
+
+            // Unified UI: last chance to register once every mod has been loaded.
+            try
+            {
+                UUIIntegration.RegisterIfEnabled();
+            }
+            catch
+            {
             }
 
             //update msg

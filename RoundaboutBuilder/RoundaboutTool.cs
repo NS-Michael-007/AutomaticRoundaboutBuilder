@@ -110,7 +110,7 @@ namespace RoundaboutBuilder
             base.OnDisable();
             if (UIWindow.instance != null && UIWindow.instance.P_RoundAboutPanel != null && UIWindow.instance.P_RoundAboutPanel.label != null)
             {
-                UIWindow.instance.P_RoundAboutPanel.label.text = "Click inside the window to reactivate the tool";
+                UIWindow.instance.P_RoundAboutPanel.label.text = Loc.L("RAB_TIP_REACTIVATE", "Click inside the window to reactivate the tool");
             }
         }
 
@@ -121,11 +121,11 @@ namespace RoundaboutBuilder
             string text = ""; // a little bit of advertising never hurt anyone
             switch (rand.Next(6))
             {
-                case 0: case 1: text = "Tip: Use Network Anarchy for elevated roads"; break;
-                case 2: case 3: text = "Tip: Use this with any network (see options)"; break;
-                case 4: text = "Tip: Check out Smart Intersection Builder!"; break;
-                case 5: text = "Tip: Check out Adjust Pathfinding mod!"; break;
-                default: text = "Tip: Use Network Anarchy for elevated roads"; break;
+                case 0: case 1: text = Loc.L("RAB_TIP_NETWORK_ANARCHY", "Tip: Use Network Anarchy for elevated roads"); break;
+                case 2: case 3: text = Loc.L("RAB_TIP_ANY_NETWORK", "Tip: Use this with any network (see options)"); break;
+                case 4: text = Loc.L("RAB_TIP_SMART_INTERSECTION", "Tip: Check out Smart Intersection Builder!"); break;
+                case 5: text = Loc.L("RAB_TIP_ADJUST_PATHFINDING", "Tip: Check out Adjust Pathfinding mod!"); break;
+                default: text = Loc.L("RAB_TIP_NETWORK_ANARCHY", "Tip: Use Network Anarchy for elevated roads"); break;
             }
 
             if (UIWindow.instance != null && UIWindow.instance.P_RoundAboutPanel != null && UIWindow.instance.P_RoundAboutPanel.label != null)
@@ -170,12 +170,12 @@ namespace RoundaboutBuilder
                         float innerCirleRadius = radius - roadWidth > 0 ? 2 * ((float)radius - roadWidth) : 2 * (float)radius;
                         RenderManager.instance.OverlayEffect.DrawCircle(cameraInfo, Color.red, hoveredNode.m_position, innerCirleRadius, hoveredNode.m_position.y - 2f, hoveredNode.m_position.y + 2f, true, true);
                         RenderManager.instance.OverlayEffect.DrawCircle(cameraInfo, Color.red, hoveredNode.m_position, 2 * ((float)radius + roadWidth /*DISTANCE_PADDING - 5*/), hoveredNode.m_position.y - 1f, hoveredNode.m_position.y + 1f, true, true);
-                        RenderHoveringLabel("Cost: " + (m_roundabout.Cost / 100) + "\nClick to build\nPress +/- to adjust radius");
+                        RenderHoveringLabel(Loc.L("RAB_HOVER_COST", "Cost: {0}\nClick to build\nPress +/- to adjust radius", m_roundabout.Cost / 100));
                     }
                     else
                     {
                         m_roundabout = null;
-                        RenderHoveringLabel("Invalid radius\nPress +/- to adjust radius");
+                        RenderHoveringLabel(Loc.L("RAB_HOVER_INVALID_RADIUS", "Invalid radius\nPress +/- to adjust radius"));
                     }
                     //RenderDirectionVectors(cameraInfo);
                 }
@@ -183,7 +183,7 @@ namespace RoundaboutBuilder
                 {
                     m_roundabout = null;
                     RenderMousePositionCircle(cameraInfo);
-                    RenderHoveringLabel("Hover mouse over intersection");
+                    RenderHoveringLabel(Loc.L("RAB_HOVER_HOVER_INTERSECTION", "Hover mouse over intersection"));
                 }
             }
             catch (Exception e)

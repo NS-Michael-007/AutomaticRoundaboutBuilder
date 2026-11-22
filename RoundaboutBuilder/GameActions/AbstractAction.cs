@@ -87,7 +87,7 @@ namespace SharedEnvironment
 
             if (Singleton<EconomyManager>.instance.PeekResource(EconomyManager.Resource.Construction, Amount) != Amount)
             {
-                throw new ActionException("Failed to charge player: not enough money",this);
+                throw new ActionException(Loc.L("RAB_ERR_NOT_ENOUGH_MONEY", "Failed to charge player: not enough money"), this);
             }
 
             Singleton<EconomyManager>.instance.FetchResource(EconomyManager.Resource.Construction, Amount, ItemClass);
